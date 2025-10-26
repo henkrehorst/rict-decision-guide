@@ -4,6 +4,8 @@ import {
     selectAdvice,
     selectLayerBeforeEndScreen,
     selectNonNegotiableFactors,
+    selectPillarScoring, selectRefurbishmentQuestionsAndResults,
+    selectTradeOffQuestionResults,
     selectValueProfile
 } from "../redux/guide-slice.ts";
 import {ResultEnum} from "../types/enums/result-enum.ts";
@@ -13,18 +15,23 @@ import {
     Collaborate,
     IbmDataProductExchange,
     ListChecked,
+    ThumbsDown,
+    ThumbsUp,
     ToolKit,
+    Unknown,
     UserProfile
 } from "@carbon/icons-react";
 import {LayersEnum, PillarEnum, PriorityEnum} from "../types/config-types.ts";
 import {GuideConfig} from "../GuideConfig.tsx";
 import {ResponsiveRadar} from "@nivo/radar";
+import type {FC} from "react";
 
 export const ResultsLayer = () => {
     const advice = useAppSelector(selectAdvice);
     const nonNegotiableFactors = useAppSelector(selectNonNegotiableFactors);
     const layerBefore = useAppSelector(selectLayerBeforeEndScreen);
     const valueProfile = useAppSelector(selectValueProfile);
+
 
     return <>
         <MenuBar/>
@@ -107,7 +114,7 @@ export const ResultsLayer = () => {
                     ))}
                 </div>
             </div>
-            {layerBefore === LayersEnum.LAYER1 || layerBefore === LayersEnum.LAYER2 &&
+            {layerBefore === LayersEnum.LAYER3 || layerBefore === LayersEnum.LAYER2 ?
                 <>
                     <div className={'mx-4 bg-gray-100 font-inter px-6 py-6 rounded-3xl mt-4'}>
                         <h1 className={'font font-bold text-black text-2xl mb-4 flex gap-4 items-center'}>
@@ -187,14 +194,166 @@ export const ResultsLayer = () => {
                             The negotiable questions help evaluate whether each pillar continues to meet the criteria
                             necessary to maintain its value classification. Using the average score per pillar and its
                             assigned priority, the system determines whether the hardware should be kept or
-                            replaced. The priority level defines the threshold for retention as follows: <span className={'font-bold'}>LOW
+                            replaced. The priority level defines the threshold for retention as follows: <span
+                            className={'font-bold'}>LOW
                             ≥ {GuideConfig.decisionThresholds[PriorityEnum.LOW]},
                             MEDIUM ≥ {GuideConfig.decisionThresholds[PriorityEnum.MEDIUM]}, and HIGH
                             ≥ {GuideConfig.decisionThresholds[PriorityEnum.HIGH]}</span>.
                         </p>
+                        <TradeOffResultsPillarTable pillar={PillarEnum.COST}/>
+                        <TradeOffResultsPillarTable pillar={PillarEnum.PERFORMANCE}/>
+                        <TradeOffResultsPillarTable pillar={PillarEnum.SUSTAINABILITY}/>
                     </div>
-                </>
+                </> : null
+            }
+            {layerBefore === LayersEnum.LAYER3 ?
+                <div className={'mx-4 bg-gray-100 font-inter px-6 py-6 rounded-3xl mt-4'}>
+                    <h1 className={'font font-bold text-black text-2xl mb-4 flex gap-4 items-center'}>
+                        <ToolKit size={32} className={'fill-current'}/>
+                        <span>Refurbishment Questions</span>
+                    </h1>
+                    <p className={'font-normal text-sm italic text-black mb-4'}>
+                        The Refurbishment Questions are used to determine whether, in cases where a pillar recommends
+                        replacing the hardware, refurbishment could instead extend its usable lifespan. To qualify for
+                        refurbishment, all questions must be answered with “yes.” If any answer is “no,” the guide will
+                        automatically recommend replacing the hardware.
+                    </p>
+                    <RefurbishmentQuestionsTable/>
+                </div> : null
             }
         </div>
     </>
+}
+
+export const RefurbishmentQuestionsTable: FC = () => {
+    const refurbishmentQuestionsAndResults = useAppSelector(selectRefurbishmentQuestionsAndResults);
+
+    return (<>
+        <table className="table-auto text-left  bg-white border-collapse border border-slate-500 mb-4">
+            <thead>
+            <tr className={'border-collapse border border-slate-500'}>
+                <th className={'px-4'}>Question</th>
+                <th className={'px-4'}>Answer</th>
+            </tr>
+            </thead>
+            <tbody>
+            {refurbishmentQuestionsAndResults.questions.map((item, index) => (
+                <tr key={index}>
+                    <td className={'px-4'}>
+                        {item.question.title}: {item.question.question}
+                    </td>
+                    <td className={'px-4'}>{item.value ?
+                        <span
+                            className={'text-md text-white bg-green font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between  items-center'}>
+                                        Yes
+                                        <Checkmark size={20} className={'fill-current'}/>
+                                    </span>
+                        :
+                        <span
+                            className={'text-md text-white bg-red font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                        No
+                                        <CloseLarge size={20} className={'fill-current'}/>
+                                    </span>
+                    }</td>
+                </tr>
+            ))}
+            </tbody>
+            <tfoot>
+            <tr className={'border-collapse border border-slate-500'}>
+                <th className={'px-4 font-bold text-right'}>
+                    Result:
+                </th>
+                <th className={'px-4 py-2 font-bold'}>{refurbishmentQuestionsAndResults.keep ?
+                    <span
+                        className={'text-md text-white bg-green font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between  items-center'}>
+                                        Keep
+                                        <Checkmark size={20} className={'fill-current'}/>
+                                    </span>
+                    :
+                    <span
+                        className={'text-md text-white bg-red font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                        Replace
+                                        <CloseLarge size={20} className={'fill-current'}/>
+                                    </span>
+                }</th>
+            </tr>
+            </tfoot>
+        </table>
+    </>)
+}
+
+export const TradeOffResultsPillarTable: FC<{ pillar: PillarEnum }> = ({pillar}) => {
+    const tradeOffQuestionResults = useAppSelector(selectTradeOffQuestionResults);
+    const pillarScoring = useAppSelector(selectPillarScoring);
+
+    return (<>
+        <h3 className={'font font-bold text-black text-xl mb-4 flex gap-4 items-center'}>
+            <span>{GuideConfig.valueProfileQuestion.values[pillar].name}</span>
+        </h3>
+        <table className="table-auto text-left  bg-white border-collapse border border-slate-500 mb-4">
+            <thead>
+            <tr className={'border-collapse border border-slate-500'}>
+                <th className={'px-4'}>Question</th>
+                <th className={'px-4'}>Answer</th>
+                <th className={'px-4'}>Score</th>
+            </tr>
+            </thead>
+            <tbody>
+            {tradeOffQuestionResults.filter(item => item.pillar == pillar).map((item, index) => (
+                <tr key={index}>
+                    <td className={'px-4'}>
+                        {GuideConfig.negotiableTradeOffQuestions[item.index].title}: {GuideConfig.negotiableTradeOffQuestions[item.index].question}
+                    </td>
+                    <td className={'px-4'}>{item.value === 1 ?
+                        <span
+                            className={'text-md text-white bg-red font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                            Insufficient
+                                            <ThumbsDown size={20} className={'fill-current'}/>
+                                        </span>
+                        : item.value === 2 ?
+                            <span
+                                className={'text-md text-white bg-orange-500 font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                            Adequate
+                                            <ThumbsUp size={20} className={'fill-current -rotate-90'}/>
+                                        </span>
+                            : item.value === 3 ?
+                                <span
+                                    className={'text-md text-white bg-green font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                            Excellent
+                                            <ThumbsUp size={20} className={'fill-current'}/>
+                                        </span> :
+                                <span
+                                    className={'text-md text-white bg-black font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                            Unknown
+                                            <Unknown size={20} className={'fill-current'}/>
+                                        </span>
+                    }</td>
+                    <td className={'px-4'}>{item.value.toFixed(0)}</td>
+                </tr>
+            ))}
+            </tbody>
+            <tfoot>
+            <tr className={'border-collapse border border-slate-500'}>
+                <th className={'px-4 font-bold text-right'}>(priority: {pillarScoring.filter(item => item.pillar === pillar)![0].priority.toString()},
+                    threshold: {'>='}{GuideConfig.decisionThresholds[pillarScoring.filter(item => item.pillar === pillar)![0].priority]})
+                    Result:
+                </th>
+                <th className={'px-4 py-2 font-bold'}>{pillarScoring.filter(item => item.pillar == pillar)![0].keep ?
+                    <span
+                        className={'text-md text-white bg-green font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between  items-center'}>
+                                        Keep
+                                        <Checkmark size={20} className={'fill-current'}/>
+                                    </span>
+                    :
+                    <span
+                        className={'text-md text-white bg-red font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                        Replace
+                                        <CloseLarge size={20} className={'fill-current'}/>
+                                    </span>
+                }</th>
+                <th className={'px-4 font-bold'}>{pillarScoring.filter(item => item.pillar == pillar)![0].score.toFixed(1)}</th>
+            </tr>
+            </tfoot>
+        </table>
+    </>)
 }

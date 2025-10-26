@@ -113,19 +113,19 @@ export const GuideConfig: IGuideConfig = {
         {
             pillar: PillarEnum.COST,
             title: 'Effectiveness',
-            question: 'If we do the proposed refurb, will cost meet our organization’s requirements for at least the next 12 months?',
+            question: 'If we refurbish the asset, will cost meet our organization’s requirements for at least the next 12 months?',
             layer: LayersEnum.LAYER3
         },
         {
             pillar: PillarEnum.PERFORMANCE,
             title: 'Effectiveness',
-            question: 'If we do the proposed refurb, will performance meet our organization’s requirements for at least the next 12 months?',
+            question: 'If we refurbish the asset, will performance meet our organization’s requirements for at least the next 12 months?',
             layer: LayersEnum.LAYER3
         },
         {
             pillar: PillarEnum.SUSTAINABILITY,
             title: 'Effectiveness',
-            question: 'If we do the proposed refurb, will sustainability meet our organization’s requirements for at least the next 12 months?',
+            question: 'If we refurbish the asset, will sustainability meet our organization’s requirements for at least the next 12 months?',
             layer: LayersEnum.LAYER3
         },
         {

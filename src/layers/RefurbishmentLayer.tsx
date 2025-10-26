@@ -5,7 +5,9 @@ import {cn} from "clsx-for-tailwind";
 import {Checkmark, CloseLarge} from "@carbon/icons-react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks.ts";
 import {
-    selectCurrentRefurbishmentQuestions, selectCurrentRefurbishmentQuestionValue,
+    selectCurrentRefurbishmentQuestions,
+    selectCurrentRefurbishmentQuestionsIndex,
+    selectCurrentRefurbishmentQuestionValue,
     setRefurbishmentQuestionValue
 } from "../redux/guide-slice.ts";
 import {NextStepButton} from "../components/next-step-button.tsx";
@@ -16,6 +18,7 @@ export const RefurbishmentLayer: FC = () => {
     const currentQuestion = useAppSelector(selectCurrentRefurbishmentQuestions)
     const currentValue = useAppSelector(selectCurrentRefurbishmentQuestionValue);
     const [optionValue, setOptionValue] = useState<string>("-1");
+    const currentIndex= useAppSelector(selectCurrentRefurbishmentQuestionsIndex);
 
     useEffect(() => {
         if (currentValue !== undefined) {
@@ -23,7 +26,7 @@ export const RefurbishmentLayer: FC = () => {
         } else {
             setOptionValue("-1");
         }
-    }, [currentQuestion]);
+    }, [currentIndex]);
 
     useEffect(() => {
         let value: -1|boolean = -1;

@@ -14,7 +14,7 @@ interface GuideState {
     }
     progress: number,
     tradeoffQuestionIndex: number,
-    tradeoffQuestionResults: Array<{ pillar: PillarEnum, value: number }>
+    tradeoffQuestionResults: Array<{ pillar: PillarEnum, index: number, value: number }>
     refurbishmentQuestionsIndex: number,
     refurbishmentQuestions: Array<RefurbishmentQuestion>
     refurbishmentQuestionResults: Array<{ index: number, value: -1 | boolean }>
@@ -36,7 +36,8 @@ const initialState: GuideState = {
     },
     progress: 0,
     tradeoffQuestionIndex: 0,
-    tradeoffQuestionResults: GuideConfig.negotiableTradeOffQuestions.map(item => ({
+    tradeoffQuestionResults: GuideConfig.negotiableTradeOffQuestions.map((item,index) => ({
+        index: index,
         pillar: item.pillar,
         value: -1
     })),
@@ -220,6 +221,24 @@ export const selectCurrentRefurbishmentQuestions = createSelector(
     })
 )
 
+export const selectCurrentRefurbishmentQuestionsIndex = createSelector(
+    selectGuideSliceState,
+    (state) => (state.refurbishmentQuestionsIndex)
+)
+
+export const selectRefurbishmentQuestionsAndResults = createSelector(
+    selectGuideSliceState,
+    (state) => {
+        return {
+            keep: state.refurbishmentQuestionResults.every(item => item.value === true),
+            questions: state.refurbishmentQuestionResults.filter(item => item.value !== -1).map(question => ({
+                question: state.refurbishmentQuestions[question.index],
+                value: question.value as boolean
+            })),
+        }
+    }
+)
+
 export const selectCurrentRefurbishmentQuestionValue = createSelector(
     selectGuideSliceState,
     (state) => (state.refurbishmentQuestionResults[state.refurbishmentQuestionsIndex].value)
@@ -239,6 +258,16 @@ export const selectAdvice = createSelector(
 export const selectLayerBeforeEndScreen = createSelector(
     selectGuideSliceState,
     (state) => state.layerBeforeEndScreen
+)
+
+export const selectTradeOffQuestionResults = createSelector(
+    selectGuideSliceState,
+    (state) => state.tradeoffQuestionResults
+)
+
+export const selectPillarScoring = createSelector(
+    selectGuideSliceState,
+    (state) => scoreCalculator(state)
 )
 
 export const selectIsNextStepPossible = createSelector(
@@ -270,14 +299,14 @@ const scoreCalculator = (state: GuideState) => {
     return Object.keys(state.valueProfile).map((pillar) => {
         let priority = PriorityEnum.LOW;
 
-        if (GuideConfig.priorityRange[PriorityEnum.LOW].min >= state.valueProfile[pillar as PillarEnum] &&
-            GuideConfig.priorityRange[PriorityEnum.LOW].min <= state.valueProfile[pillar as PillarEnum]) {
+        if (GuideConfig.priorityRange[PriorityEnum.LOW].min <= state.valueProfile[pillar as PillarEnum] &&
+            GuideConfig.priorityRange[PriorityEnum.LOW].max >= state.valueProfile[pillar as PillarEnum]) {
             priority = PriorityEnum.LOW;
-        } else if (GuideConfig.priorityRange[PriorityEnum.MEDIUM].min >= state.valueProfile[pillar as PillarEnum] &&
-            GuideConfig.priorityRange[PriorityEnum.MEDIUM].min <= state.valueProfile[pillar as PillarEnum]) {
+        } else if (GuideConfig.priorityRange[PriorityEnum.MEDIUM].min <= state.valueProfile[pillar as PillarEnum] &&
+            GuideConfig.priorityRange[PriorityEnum.MEDIUM].max >= state.valueProfile[pillar as PillarEnum]) {
             priority = PriorityEnum.MEDIUM;
-        } else if (GuideConfig.priorityRange[PriorityEnum.HIGH].min >= state.valueProfile[pillar as PillarEnum] &&
-            GuideConfig.priorityRange[PriorityEnum.HIGH].min <= state.valueProfile[pillar as PillarEnum]) {
+        } else if (GuideConfig.priorityRange[PriorityEnum.HIGH].min <= state.valueProfile[pillar as PillarEnum] &&
+            GuideConfig.priorityRange[PriorityEnum.HIGH].max >= state.valueProfile[pillar as PillarEnum]) {
             priority = PriorityEnum.HIGH
         }
 
