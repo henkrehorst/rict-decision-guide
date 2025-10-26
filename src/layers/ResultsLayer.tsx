@@ -41,7 +41,7 @@ export const ResultsLayer = () => {
                     Hardware Decommissioning Advice
                 </h2>
             </div>
-            <div className={'grid grid-cols-2 gap-4 px-4'}>
+            <div className={'grid grid-cols-1 md:grid-cols-2 gap-4 px-4'}>
                 {advice == ResultEnum.REPLACE &&
                     <div className={'bg-red font-inter px-6 py-6 rounded-3xl'}>
                         <h1 className={'font font-bold text-white text-2xl mb-4 flex gap-2 items-center'}>
