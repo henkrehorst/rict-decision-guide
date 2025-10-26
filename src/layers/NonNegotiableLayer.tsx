@@ -38,7 +38,7 @@ export const NonNegotiableLayer: FC<{ config: NoNNegotiableQuestion }> = ({confi
                 </div>
                 <div className={'flex flex-col gap-8 mt-8 p-4'}>
                     {factors?.map((item, index) => (
-                        <div className={'grid grid-cols-1 md:grid-cols-2 gap-4 items-center'}>
+                        <div key={index} className={'grid grid-cols-1 md:grid-cols-2 gap-4 items-center'}>
                             <p className={'font-inter text-3xl text-black text-left md:text-right'}>
                                 {item.factor}
                             </p>
