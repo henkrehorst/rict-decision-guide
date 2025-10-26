@@ -16,20 +16,20 @@ export const NegotiableTradeOffLayer: FC<{ questions: Array<NegotiableTradeOffQu
     const questionIndex = useAppSelector(selectTradeoffQuestionIndex);
     const currentValue = useAppSelector(selectCurrentTradeOffQuestionValue);
     const dispatch = useAppDispatch();
-    const [optionValue, setOptionValue] = useState<null | string>(null);
+    const [optionValue, setOptionValue] = useState<null | string>("-1");
 
     useEffect(() => {
         if (currentValue !== undefined) {
             setOptionValue(String(currentValue));
         } else {
-            setOptionValue(null);
+            setOptionValue("-1");
         }
     }, [questionIndex]);
 
     useEffect(() => {
         dispatch(setTradeOffQuestionValue({
             index: questionIndex,
-            value: Number(optionValue)
+            value: optionValue === null ? -1 : Number(optionValue)
         }));
     }, [optionValue]);
 
@@ -98,7 +98,7 @@ export const NegotiableTradeOffLayer: FC<{ questions: Array<NegotiableTradeOffQu
                         </Radio>
                     </RadioGroup>
                 </div>
-                {optionValue !== null &&
+                {optionValue !== "-1" &&
                     <NextStepButton/>
                 }
             </div>

@@ -13,7 +13,7 @@ interface GuideState {
     }
     progress: number,
     tradeoffQuestionIndex: number,
-    tradeoffQuestionResults: Array<{ pillar: PillarEnum, value: undefined | number }>
+    tradeoffQuestionResults: Array<{ pillar: PillarEnum, value: number }>
 }
 
 const initialState: GuideState = {
@@ -31,7 +31,7 @@ const initialState: GuideState = {
     tradeoffQuestionIndex: 0,
     tradeoffQuestionResults: GuideConfig.negotiableTradeOffQuestions.map(item => ({
         pillar: item.pillar,
-        value: undefined
+        value: -1
     }))
 }
 
@@ -56,11 +56,13 @@ export const guideSlice = createSlice({
                 case LayersEnum.LAYER1:
                     state.screen = LayersEnum.LAYER2;
                     state.tradeoffQuestionIndex = 0;
+                    state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex+1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
                     break;
                 case LayersEnum.LAYER2:
                     if (state.tradeoffQuestionIndex + 1 < state.tradeoffQuestionResults.length) {
                         state.screen = LayersEnum.LAYER2;
                         state.tradeoffQuestionIndex = state.tradeoffQuestionIndex + 1;
+                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex+1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
                     }else{
                         state.screen = LayersEnum.LAYER3;
                     }
@@ -82,6 +84,7 @@ export const guideSlice = createSlice({
                         state.screen = LayersEnum.LAYER1;
                     }else{
                         state.tradeoffQuestionIndex = state.tradeoffQuestionIndex - 1;
+                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex+1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
                     }
                     break;
             }
@@ -134,6 +137,24 @@ export const selectCurrentTradeOffQuestionValue = createSelector(
 export const selectIsNonNegotiableFactorsSelectionComplete = createSelector(
     selectGuideSliceState,
     (state) => state.nonNegotiableFactors.every((factor) => factor.value !== null)
+)
+
+export const selectIsNextStepPossible = createSelector(
+    selectGuideSliceState,
+    (state) => {
+        switch (state.screen) {
+            case LayersEnum.START:
+                return true;
+            case LayersEnum.LAYER0:
+                return state.nonNegotiableFactors.every((factor) => factor.value !== null);
+            case LayersEnum.LAYER1:
+                return Object.values(state.valueProfile).reduce((total, num) => total + num, 0) >= 99;
+            case LayersEnum.LAYER2:
+                return state.tradeoffQuestionResults[state.tradeoffQuestionIndex].value !== -1;
+        }
+
+        return false;
+    }
 )
 
 export const {
