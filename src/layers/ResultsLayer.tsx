@@ -79,11 +79,9 @@ export const ResultsLayer = () => {
                             <span>Keep your hardware</span>
                         </h1>
                         <p className={'font-normal text-md text-white'}>
-                            Plan a replacement. Document which non-negotiables or thresholds failed and why
-                            refurbishment
-                            was rejected. Take this into account during procurement. Schedule decommissioning to
-                            minimize
-                            downtime and ensure responsible recycling or reuse, and capture lessons learned.
+                            Keep the asset in production for the next 12 months. Monitor the most important indicators
+                            that were closest to failing. Define clear trigger thresholds that would force an early
+                            review, and schedule a re-evaluation in one year or sooner if a trigger is hit.
                         </p>
                     </div>
                 }
