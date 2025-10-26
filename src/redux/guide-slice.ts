@@ -1,7 +1,8 @@
 import {createSelector, createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import type {RootState} from "./store.ts";
 import {GuideConfig} from "../GuideConfig.tsx";
-import {LayersEnum, PillarEnum} from "../types/config-types.ts";
+import {LayersEnum, PillarEnum, PriorityEnum, type RefurbishmentQuestion} from "../types/config-types.ts";
+import {ResultEnum} from "../types/enums/result-enum.ts";
 
 interface GuideState {
     screen: LayersEnum
@@ -14,6 +15,12 @@ interface GuideState {
     progress: number,
     tradeoffQuestionIndex: number,
     tradeoffQuestionResults: Array<{ pillar: PillarEnum, value: number }>
+    refurbishmentQuestionsIndex: number,
+    refurbishmentQuestions: Array<RefurbishmentQuestion>
+    refurbishmentQuestionResults: Array<{ index: number, value: -1 | boolean }>
+    refurbishmentResult: boolean
+    layerBeforeEndScreen: LayersEnum
+    advice: ResultEnum
 }
 
 const initialState: GuideState = {
@@ -32,7 +39,13 @@ const initialState: GuideState = {
     tradeoffQuestionResults: GuideConfig.negotiableTradeOffQuestions.map(item => ({
         pillar: item.pillar,
         value: -1
-    }))
+    })),
+    refurbishmentQuestionsIndex: 0,
+    refurbishmentQuestions: [],
+    refurbishmentQuestionResults: [],
+    refurbishmentResult: false,
+    layerBeforeEndScreen: LayersEnum.LAYER0,
+    advice: ResultEnum.REPLACE
 }
 
 export const guideSlice = createSlice({
@@ -43,6 +56,12 @@ export const guideSlice = createSlice({
         setTradeOffQuestionValue: (state, action: PayloadAction<{ index: number, value: number }>) => {
             state.tradeoffQuestionResults[action.payload.index].value = action.payload.value;
         },
+        setRefurbishmentQuestionValue: (state, action: PayloadAction<{ index: number, value: -1|boolean }>) => {
+            if(typeof action.payload.value === "boolean"){
+                state.refurbishmentResult = action.payload.value;
+            }
+            state.refurbishmentQuestionResults[action.payload.index].value = action.payload.value;
+        },
         goToNextStep: (state) => {
             switch (state.screen) {
                 case LayersEnum.START:
@@ -50,21 +69,59 @@ export const guideSlice = createSlice({
                     state.progress = 15;
                     break;
                 case LayersEnum.LAYER0:
-                    state.screen = LayersEnum.LAYER1;
-                    state.progress = 40;
+                    if (state.nonNegotiableFactors.some((factor) => (factor.value !== "false"))) {
+                        state.screen = LayersEnum.END;
+                        state.layerBeforeEndScreen = LayersEnum.LAYER0;
+                        state.advice = ResultEnum.REPLACE;
+                        state.progress = 100;
+                    } else {
+                        state.screen = LayersEnum.LAYER1;
+                        state.progress = 40;
+                    }
                     break;
                 case LayersEnum.LAYER1:
                     state.screen = LayersEnum.LAYER2;
                     state.tradeoffQuestionIndex = 0;
-                    state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex+1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
+                    state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 30, 0), 30);
                     break;
                 case LayersEnum.LAYER2:
                     if (state.tradeoffQuestionIndex + 1 < state.tradeoffQuestionResults.length) {
                         state.screen = LayersEnum.LAYER2;
                         state.tradeoffQuestionIndex = state.tradeoffQuestionIndex + 1;
-                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex+1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
-                    }else{
+                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 30, 0), 30);
+                    } else {
+                        const score = scoreCalculator(state);
+                        if (score.every(item => item.keep)) {
+                            state.advice = ResultEnum.KEEP;
+                            state.screen = LayersEnum.END;
+                            state.progress = 100;
+                            state.layerBeforeEndScreen = LayersEnum.LAYER2;
+                        } else {
+                            state.refurbishmentQuestions = getOnlyNeededRefurbishmentQuestions(score.filter(item => !item.keep).map(item => item.pillar))
+                            state.refurbishmentQuestionResults = state.refurbishmentQuestions.map((_, index) => ({
+                                index: index,
+                                value: -1
+                            }))
+                            state.refurbishmentResult = false;
+                            state.progress = 80 + Math.min(Math.max(((state.refurbishmentQuestionsIndex + 1) / state.refurbishmentQuestions.length) * 20, 0), 20);
+                            state.screen = LayersEnum.LAYER3;
+                        }
+                    }
+                    break;
+                case LayersEnum.LAYER3:
+                    if (state.refurbishmentResult && state.refurbishmentQuestionsIndex + 1 < state.refurbishmentQuestionResults.length) {
+                        state.progress = 80 + Math.min(Math.max(((state.refurbishmentQuestionsIndex + 1) / state.refurbishmentQuestions.length) * 20, 0), 20);
+                        state.refurbishmentQuestionsIndex = state.refurbishmentQuestionsIndex + 1;
                         state.screen = LayersEnum.LAYER3;
+                    } else {
+                        state.screen = LayersEnum.END;
+                        state.layerBeforeEndScreen = LayersEnum.LAYER3;
+                        if(state.refurbishmentResult){
+                            state.advice = ResultEnum.REFURBISHMENT;
+                        }else{
+                            state.advice = ResultEnum.REPLACE;
+                        }
+                        state.progress = 100;
                     }
                     break;
             }
@@ -76,17 +133,35 @@ export const guideSlice = createSlice({
                     state.progress = 40;
                     break;
                 case LayersEnum.LAYER1:
+                case LayersEnum.NON_NEGOTIABLE_EXISTS:
                     state.screen = LayersEnum.LAYER0;
                     state.progress = 15;
                     break;
                 case LayersEnum.LAYER2:
                     if (state.tradeoffQuestionIndex - 1 < 0) {
                         state.screen = LayersEnum.LAYER1;
-                    }else{
+                    } else {
                         state.tradeoffQuestionIndex = state.tradeoffQuestionIndex - 1;
-                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex+1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
+                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
                     }
                     break;
+                case LayersEnum.LAYER3:
+                    if (state.refurbishmentQuestionsIndex - 1 < 0) {
+                        state.screen = LayersEnum.LAYER2;
+                    } else {
+                        state.refurbishmentQuestionsIndex = state.refurbishmentQuestionsIndex - 1;
+                        state.progress = 80 + Math.min(Math.max(((state.refurbishmentQuestionsIndex + 1) / state.refurbishmentQuestions.length) * 20, 0), 20);
+                    }
+                    break;
+                case LayersEnum.END:
+                    state.screen = state.layerBeforeEndScreen;
+                    if(state.screen === LayersEnum.LAYER0){
+                        state.progress = 15;
+                    }else if(state.screen === LayersEnum.LAYER2){
+                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
+                    }else if(state.screen === LayersEnum.LAYER3){
+                        state.progress = 80 + Math.min(Math.max(((state.refurbishmentQuestionsIndex + 1) / state.refurbishmentQuestions.length) * 20, 0), 20);
+                    }
             }
         },
         setValueProfile: (state, action: PayloadAction<{
@@ -96,7 +171,10 @@ export const guideSlice = createSlice({
         }>) => {
             state.valueProfile = action.payload;
         },
-        setNonNegotiableFactorValue: (state, action: PayloadAction<{ index: number, value: "true" | "false" | null }>) => {
+        setNonNegotiableFactorValue: (state, action: PayloadAction<{
+            index: number,
+            value: "true" | "false" | null
+        }>) => {
             state.nonNegotiableFactors[action.payload.index].value = action.payload.value;
         }
     }
@@ -134,9 +212,33 @@ export const selectCurrentTradeOffQuestionValue = createSelector(
     (state) => (state.tradeoffQuestionResults[state.tradeoffQuestionIndex].value)
 )
 
+export const selectCurrentRefurbishmentQuestions = createSelector(
+    selectGuideSliceState,
+    (state) => ({
+        question: state.refurbishmentQuestions[state.refurbishmentQuestionsIndex],
+        index: state.refurbishmentQuestionsIndex
+    })
+)
+
+export const selectCurrentRefurbishmentQuestionValue = createSelector(
+    selectGuideSliceState,
+    (state) => (state.refurbishmentQuestionResults[state.refurbishmentQuestionsIndex].value)
+)
+
+
 export const selectIsNonNegotiableFactorsSelectionComplete = createSelector(
     selectGuideSliceState,
     (state) => state.nonNegotiableFactors.every((factor) => factor.value !== null)
+)
+
+export const selectAdvice = createSelector(
+    selectGuideSliceState,
+    (state) => state.advice
+)
+
+export const selectLayerBeforeEndScreen = createSelector(
+    selectGuideSliceState,
+    (state) => state.layerBeforeEndScreen
 )
 
 export const selectIsNextStepPossible = createSelector(
@@ -151,13 +253,52 @@ export const selectIsNextStepPossible = createSelector(
                 return Object.values(state.valueProfile).reduce((total, num) => total + num, 0) >= 99;
             case LayersEnum.LAYER2:
                 return state.tradeoffQuestionResults[state.tradeoffQuestionIndex].value !== -1;
+            case LayersEnum.LAYER3:
+                return state.refurbishmentQuestionResults[state.refurbishmentQuestionsIndex].value !== -1;
         }
 
         return false;
     }
 )
 
+const scoreCalculator = (state: GuideState) => {
+    const avgCalculatorMethod = (items: Array<{ pillar: PillarEnum, value: number }>, pillar: PillarEnum) => {
+        return items.filter((factor) => factor.pillar === pillar && factor.value > 0)
+            .reduce((avg, factor, _, {length}) => avg + factor.value / length, 0);
+    }
+
+    return Object.keys(state.valueProfile).map((pillar) => {
+        let priority = PriorityEnum.LOW;
+
+        if (GuideConfig.priorityRange[PriorityEnum.LOW].min >= state.valueProfile[pillar as PillarEnum] &&
+            GuideConfig.priorityRange[PriorityEnum.LOW].min <= state.valueProfile[pillar as PillarEnum]) {
+            priority = PriorityEnum.LOW;
+        } else if (GuideConfig.priorityRange[PriorityEnum.MEDIUM].min >= state.valueProfile[pillar as PillarEnum] &&
+            GuideConfig.priorityRange[PriorityEnum.MEDIUM].min <= state.valueProfile[pillar as PillarEnum]) {
+            priority = PriorityEnum.MEDIUM;
+        } else if (GuideConfig.priorityRange[PriorityEnum.HIGH].min >= state.valueProfile[pillar as PillarEnum] &&
+            GuideConfig.priorityRange[PriorityEnum.HIGH].min <= state.valueProfile[pillar as PillarEnum]) {
+            priority = PriorityEnum.HIGH
+        }
+
+        const score = avgCalculatorMethod(state.tradeoffQuestionResults, pillar as PillarEnum);
+        const keep = score >= GuideConfig.decisionThresholds[priority];
+
+        return {
+            pillar: pillar as PillarEnum,
+            priority: priority,
+            score: score,
+            keep: keep,
+        }
+    })
+}
+
+const getOnlyNeededRefurbishmentQuestions = (pillars: PillarEnum[]) => {
+    return GuideConfig.refurbishmentQuestions.filter(item => item.pillar === undefined || pillars.includes(item.pillar));
+}
+
 export const {
+    setRefurbishmentQuestionValue,
     goToNextStep,
     goToPreviousStep,
     setNonNegotiableFactorValue,

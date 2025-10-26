@@ -11,7 +11,7 @@ export const GuideConfig: IGuideConfig = {
         factors: [
             'Depreciation',
             'Warranty',
-            'Functional obsolesance',
+            'Functional obsolescence',
             'Security'
         ]
     },
@@ -81,27 +81,62 @@ export const GuideConfig: IGuideConfig = {
             layer: LayersEnum.LAYER2
         },
         {
-            pillar: PillarEnum.PERFORMANCE,
+            pillar: PillarEnum.SUSTAINABILITY,
             title: 'Reuse potential',
             question: 'How well can the device be credibly reused internally within the organization?',
             layer: LayersEnum.LAYER2
         },
         {
-            pillar: PillarEnum.PERFORMANCE,
+            pillar: PillarEnum.SUSTAINABILITY,
             title: 'Energy efficiency delta',
             question: 'How much potential is there for lowering energy use by replacing the device?',
             layer: LayersEnum.LAYER2
         },
         {
-            pillar: PillarEnum.PERFORMANCE,
+            pillar: PillarEnum.SUSTAINABILITY,
             title: 'Recycling of spare parts',
             question: 'How well can functioning parts from to-be decommissioned devices be recovered for reuse or recycling?',
             layer: LayersEnum.LAYER2
         },
     ],
     decisionThresholds: {
-        Low: 1.6,
-        Medium: 2,
-        High: 2.6
-    }
+        LOW: 1.6,
+        MEDIUM: 2,
+        HIGH: 2.6
+    },
+    priorityRange: {
+        LOW: {max: 25, min: 0},
+        MEDIUM: {max: 50, min: 26},
+        HIGH: {max: 99, min: 51},
+    },
+    refurbishmentQuestions: [
+        {
+            pillar: PillarEnum.COST,
+            title: 'Effectiveness',
+            question: 'If we do the proposed refurb, will cost meet our organization’s requirements for at least the next 12 months?',
+            layer: LayersEnum.LAYER3
+        },
+        {
+            pillar: PillarEnum.PERFORMANCE,
+            title: 'Effectiveness',
+            question: 'If we do the proposed refurb, will performance meet our organization’s requirements for at least the next 12 months?',
+            layer: LayersEnum.LAYER3
+        },
+        {
+            pillar: PillarEnum.SUSTAINABILITY,
+            title: 'Effectiveness',
+            question: 'If we do the proposed refurb, will sustainability meet our organization’s requirements for at least the next 12 months?',
+            layer: LayersEnum.LAYER3
+        },
+        {
+            title: 'Logistics',
+            question: 'Are parts/service and change windows available within policy lead times, with acceptable downtime and operational risk?',
+            layer: LayersEnum.LAYER3
+        },
+        {
+            title: 'Cost',
+            question: 'Is the refurb effort reasonably small and cheap relative to replacement?',
+            layer: LayersEnum.LAYER3
+        },
+    ]
 }

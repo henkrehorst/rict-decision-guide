@@ -7,6 +7,8 @@ import {GuideConfig} from "./GuideConfig.tsx";
 import {LayersEnum} from "./types/config-types.ts";
 import {ValueProfileLayer} from "./layers/ValueProfileLayer.tsx";
 import {NegotiableTradeOffLayer} from "./layers/NegotiableTradeOffLayer.tsx";
+import {RefurbishmentLayer} from "./layers/RefurbishmentLayer.tsx";
+import {ResultsLayer} from "./layers/ResultsLayer.tsx";
 
 function App() {
     const currentLayer = useAppSelector(selectCurrentLayer);
@@ -19,6 +21,10 @@ function App() {
             return <ValueProfileLayer config={GuideConfig.valueProfileQuestion}/>;
         case LayersEnum.LAYER2:
             return <NegotiableTradeOffLayer questions={GuideConfig.negotiableTradeOffQuestions}/>
+        case LayersEnum.LAYER3:
+            return <RefurbishmentLayer/>
+        case LayersEnum.END:
+            return <ResultsLayer/>
         default:
             return <></>
     }

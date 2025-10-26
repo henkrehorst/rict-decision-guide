@@ -46,7 +46,7 @@ export const NegotiableTradeOffLayer: FC<{ questions: Array<NegotiableTradeOffQu
                     </h1>
                 </div>
                 <div className={'mt-8 p-4'}>
-                    <RadioGroup className={"grid grid-cols-1 md:flex gap-4"} value={optionValue}
+                    <RadioGroup className={"flex flex-col md:flex-row flex-wrap gap-4"} value={optionValue}
                                 onChange={setOptionValue}>
                         <Radio
                             value={"1"}

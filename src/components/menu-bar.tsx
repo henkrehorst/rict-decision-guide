@@ -15,7 +15,7 @@ export const MenuBar = () => {
 
     return (
         <>
-            <div className={'absolute top-0 left-0 right-0'}>
+            <div className={'fixed top-0 left-0 right-0'}>
                 <div className={'w-full bg-white h-1'}>
                     <div className={'block h-1.5 bg-green'} style={{width: `${progress}%`}}></div>
                 </div>
