@@ -8,6 +8,7 @@ import "@fontsource/source-serif-pro"
 import "@fontsource/source-serif-pro/900.css"
 import {Provider} from "react-redux";
 import {store} from "./redux/store.ts";
+import 'react-tooltip/dist/react-tooltip.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

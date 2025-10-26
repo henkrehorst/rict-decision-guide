@@ -1,3 +1,5 @@
+import plugin from "tailwindcss";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}", "./index.html"],
@@ -7,7 +9,9 @@ export default {
         lightgreen: '#E2EEE0',
         green: '#3D8F2C',
         blue: '#233fff',
-        bluehover: '#243FFF'
+        bluehover: '#0018b3',
+        red: '#e81b42',
+        correctGreen: '#038a25'
       },
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
@@ -15,6 +19,7 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [
+  ],
 }
 

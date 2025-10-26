@@ -1,17 +1,21 @@
 import './App.css'
-import {StartScreen} from "./screens/StartScreen.tsx";
+import {StartScreen} from "./layers/StartScreen.tsx";
 import {useAppSelector} from "./redux/hooks.ts";
-import {selectCurrentScreen} from "./redux/guide-slice.ts";
-import {ScreenEnum} from "./types/enums/screen-enum.ts";
-import {NonNegotiableScreen} from "./screens/NonNegotiableScreen.tsx";
+import {selectCurrentLayer} from "./redux/guide-slice.ts";
+import {NonNegotiableLayer} from "./layers/NonNegotiableLayer.tsx";
+import {GuideConfig} from "./GuideConfig.tsx";
+import {LayersEnum} from "./types/config-types.ts";
+import {ValueProfileLayer} from "./layers/ValueProfileLayer.tsx";
 
 function App() {
-    const screen = useAppSelector(selectCurrentScreen);
-    switch (screen) {
-        case ScreenEnum.START:
+    const currentLayer = useAppSelector(selectCurrentLayer);
+    switch (currentLayer) {
+        case LayersEnum.START:
             return <StartScreen/>;
-        case ScreenEnum.SLIDER:
-            return <NonNegotiableScreen/>;
+        case LayersEnum.LAYER0:
+            return <NonNegotiableLayer config={GuideConfig.nonNegotiableQuestion}/>;
+        case LayersEnum.LAYER1:
+            return <ValueProfileLayer config={GuideConfig.valueProfileQuestion}/>;
         default:
             return <></>
     }

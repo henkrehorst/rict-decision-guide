@@ -1,6 +1,5 @@
 import {useAppDispatch} from "../redux/hooks.ts";
-import {setScreen} from "../redux/guide-slice.ts";
-import {ScreenEnum} from "../types/enums/screen-enum.ts";
+import {goToNextStep} from "../redux/guide-slice.ts";
 
 export const StartScreen = () => {
     const dispatch = useAppDispatch();
@@ -11,7 +10,7 @@ export const StartScreen = () => {
                 <div className={'p-8 bg-white rounded-3xl w-full'}>
                     <h1 className={'text-black font-source text-3xl font-bold mb-16'}>THE IT DECOMMISSION ADVISOR</h1>
                     <button onClick={() => {
-                        dispatch(setScreen({screen: ScreenEnum.SLIDER}))
+                        dispatch(goToNextStep())
                     }}
                             className={'text-2xl bg-blue hover:bg-bluehover font-inter font-bold text-white px-8 py-4 rounded-xl'}>
                         Start
