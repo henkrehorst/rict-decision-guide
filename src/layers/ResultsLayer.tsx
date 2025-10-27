@@ -240,7 +240,7 @@ export const RefurbishmentQuestionsTable: FC = () => {
     const refurbishmentQuestionsAndResults = useAppSelector(selectRefurbishmentQuestionsAndResults);
 
     return (<>
-        <table className="table-auto text-left  bg-white border-collapse border border-slate-500 mb-4">
+        <table className="w-full table-auto text-left  bg-white border-collapse border border-slate-500 mb-4">
             <thead>
             <tr className={'border-collapse border border-slate-500'}>
                 <th className={'px-4'}>Question</th>
@@ -301,7 +301,8 @@ export const TradeOffResultsPillarTable: FC<{ pillar: PillarEnum }> = ({pillar})
         <h3 className={'font font-bold text-black text-xl mb-4 flex gap-4 items-center'}>
             <span>{GuideConfig.valueProfileQuestion.values[pillar].name}</span>
         </h3>
-        <table className="table-auto text-left  bg-white border-collapse border border-slate-500 mb-4">
+        <div className={'overflow-x-auto'}>
+        <table className="w-full table-auto text-left bg-white border-collapse border border-slate-500 mb-4">
             <thead>
             <tr className={'border-collapse border border-slate-500'}>
                 <th className={'px-4'}>Question</th>
@@ -366,11 +367,12 @@ export const TradeOffResultsPillarTable: FC<{ pillar: PillarEnum }> = ({pillar})
             </tr>
             </tfoot>
         </table>
+        </div>
     </>)
 }
 
 export const NonNegotiableQuestionsTable: FC = () => {
-    const refurbishmentQuestionsAndResults = useAppSelector(selectNonNegotiableTradeoffQuestionResults);
+    const nonNegotiableQuestionsAndResults = useAppSelector(selectNonNegotiableTradeoffQuestionResults);
     const nonNegotiableFactors = useAppSelector(selectNonNegotiableFactors);
     const nonNegotiableTradeResult = useAppSelector(selectNonNegotiableTradeResult)
 
@@ -385,12 +387,12 @@ export const NonNegotiableQuestionsTable: FC = () => {
             </tr>
             </thead>
             <tbody>
-            {refurbishmentQuestionsAndResults.map((item, index) => (
+            {nonNegotiableQuestionsAndResults.map((item, index) => (
                 <tr key={index}>
                     <td className={'px-4'}>
                         {item.title}: {item.question}
                     </td>
-                    <td className={'px-4'}>{item.result ?
+                    <td className={'px-4'}>{nonNegotiableFactors.filter(f => f.factor === item.factor)[0].value === "true" ?
                         <span
                             className={'text-md text-white bg-green font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between  items-center'}>
                                         Yes
@@ -403,7 +405,7 @@ export const NonNegotiableQuestionsTable: FC = () => {
                                         <CloseLarge size={20} className={'fill-current'}/>
                                     </span>
                     }</td>
-                    <td className={'px-4'}>{nonNegotiableFactors.filter(f => f.factor === item.factor)[0].value === "true" ?
+                    <td className={'px-4'}>{item.result ?
                         <span
                             className={'text-md text-white bg-green font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between  items-center'}>
                                         Yes
