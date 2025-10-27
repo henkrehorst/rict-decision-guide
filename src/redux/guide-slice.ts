@@ -338,6 +338,8 @@ export const selectIsNextStepPossible = createSelector(
                 return state.tradeoffQuestionResults[state.tradeoffQuestionIndex].value !== -1;
             case LayersEnum.LAYER3:
                 return state.refurbishmentQuestionResults[state.refurbishmentQuestionsIndex].value !== -1;
+            case LayersEnum.LAYER15:
+                return state.nonNegotiableTradeQuestionResults[state.nonNegotiableTradeQuestionsIndex].value !== -1;
         }
 
         return false;
