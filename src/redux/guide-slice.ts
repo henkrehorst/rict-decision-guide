@@ -18,7 +18,10 @@ interface GuideState {
     refurbishmentQuestionsIndex: number,
     refurbishmentQuestions: Array<RefurbishmentQuestion>
     refurbishmentQuestionResults: Array<{ index: number, value: -1 | boolean }>
+    nonNegotiableTradeQuestionResults: Array<{ index: number, value: -1 | boolean, factor: string }>
+    nonNegotiableTradeQuestionsIndex: number,
     refurbishmentResult: boolean
+    nonNegotiableTradeResult: boolean
     layerBeforeEndScreen: LayersEnum
     advice: ResultEnum
 }
@@ -36,7 +39,7 @@ const initialState: GuideState = {
     },
     progress: 0,
     tradeoffQuestionIndex: 0,
-    tradeoffQuestionResults: GuideConfig.negotiableTradeOffQuestions.map((item,index) => ({
+    tradeoffQuestionResults: GuideConfig.negotiableTradeOffQuestions.map((item, index) => ({
         index: index,
         pillar: item.pillar,
         value: -1
@@ -44,9 +47,16 @@ const initialState: GuideState = {
     refurbishmentQuestionsIndex: 0,
     refurbishmentQuestions: [],
     refurbishmentQuestionResults: [],
+    nonNegotiableTradeQuestionsIndex: 0,
+    nonNegotiableTradeQuestionResults: GuideConfig.nonNegotiableTradeOffQuestion.map((item, index) => ({
+        index: index,
+        value: -1,
+        factor: item.factor
+    })),
     refurbishmentResult: false,
     layerBeforeEndScreen: LayersEnum.LAYER0,
-    advice: ResultEnum.REPLACE
+    advice: ResultEnum.REPLACE,
+    nonNegotiableTradeResult: false
 }
 
 export const guideSlice = createSlice({
@@ -57,11 +67,22 @@ export const guideSlice = createSlice({
         setTradeOffQuestionValue: (state, action: PayloadAction<{ index: number, value: number }>) => {
             state.tradeoffQuestionResults[action.payload.index].value = action.payload.value;
         },
-        setRefurbishmentQuestionValue: (state, action: PayloadAction<{ index: number, value: -1|boolean }>) => {
-            if(typeof action.payload.value === "boolean"){
+        setRefurbishmentQuestionValue: (state, action: PayloadAction<{ index: number, value: -1 | boolean }>) => {
+            if (typeof action.payload.value === "boolean") {
                 state.refurbishmentResult = action.payload.value;
             }
             state.refurbishmentQuestionResults[action.payload.index].value = action.payload.value;
+        },
+        setNonNegotiableTradeQuestionValue: (state, action: PayloadAction<{
+            index: number,
+            value: -1 | boolean,
+            factor: string
+        }>) => {
+            if (typeof action.payload.value === "boolean") {
+                const factorInformation = state.nonNegotiableFactors.filter(x => x.factor === action.payload.factor)[0];
+                state.nonNegotiableTradeResult = factorInformation.value === "true" && action.payload.value;
+            }
+            state.nonNegotiableTradeQuestionResults[action.payload.index].value = action.payload.value;
         },
         goToNextStep: (state) => {
             switch (state.screen) {
@@ -70,20 +91,29 @@ export const guideSlice = createSlice({
                     state.progress = 15;
                     break;
                 case LayersEnum.LAYER0:
-                    if (state.nonNegotiableFactors.some((factor) => (factor.value !== "false"))) {
+                    state.screen = LayersEnum.LAYER1;
+                    state.progress = 40;
+                    break;
+                case LayersEnum.LAYER1:
+                    state.screen = LayersEnum.LAYER15;
+                    state.nonNegotiableTradeQuestionsIndex = 0;
+                    state.progress = 40 + Math.min(Math.max(((state.nonNegotiableTradeQuestionsIndex + 1) / state.nonNegotiableTradeQuestionResults.length) * 10, 0), 10);
+                    break;
+                case LayersEnum.LAYER15:
+                    state.screen = LayersEnum.LAYER15;
+                    if (!state.nonNegotiableTradeResult && state.nonNegotiableTradeQuestionsIndex + 1 < state.nonNegotiableTradeQuestionResults.length) {
+                        state.nonNegotiableTradeQuestionsIndex = state.nonNegotiableTradeQuestionsIndex + 1
+                        state.progress = 40 + Math.min(Math.max(((state.nonNegotiableTradeQuestionsIndex + 1) / state.nonNegotiableTradeQuestionResults.length) * 10, 0), 10);
+                    } else if (state.nonNegotiableTradeResult) {
                         state.screen = LayersEnum.END;
-                        state.layerBeforeEndScreen = LayersEnum.LAYER0;
+                        state.layerBeforeEndScreen = LayersEnum.LAYER15;
                         state.advice = ResultEnum.REPLACE;
                         state.progress = 100;
                     } else {
-                        state.screen = LayersEnum.LAYER1;
-                        state.progress = 40;
+                        state.screen = LayersEnum.LAYER2;
+                        state.tradeoffQuestionIndex = 0;
+                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 30, 0), 30);
                     }
-                    break;
-                case LayersEnum.LAYER1:
-                    state.screen = LayersEnum.LAYER2;
-                    state.tradeoffQuestionIndex = 0;
-                    state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 30, 0), 30);
                     break;
                 case LayersEnum.LAYER2:
                     if (state.tradeoffQuestionIndex + 1 < state.tradeoffQuestionResults.length) {
@@ -117,9 +147,9 @@ export const guideSlice = createSlice({
                     } else {
                         state.screen = LayersEnum.END;
                         state.layerBeforeEndScreen = LayersEnum.LAYER3;
-                        if(state.refurbishmentResult){
+                        if (state.refurbishmentResult) {
                             state.advice = ResultEnum.REFURBISHMENT;
-                        }else{
+                        } else {
                             state.advice = ResultEnum.REPLACE;
                         }
                         state.progress = 100;
@@ -138,9 +168,18 @@ export const guideSlice = createSlice({
                     state.screen = LayersEnum.LAYER0;
                     state.progress = 15;
                     break;
+                case LayersEnum.LAYER15:
+                    if (state.nonNegotiableTradeQuestionsIndex - 1 < 0) {
+                        state.screen = LayersEnum.LAYER1;
+                        state.progress = 40;
+                    } else {
+                        state.nonNegotiableTradeQuestionsIndex = state.nonNegotiableTradeQuestionsIndex - 1;
+                        state.progress = 40 + Math.min(Math.max(((state.nonNegotiableTradeQuestionsIndex + 1) / state.nonNegotiableTradeQuestionResults.length) * 10, 0), 10);
+                    }
+                    break;
                 case LayersEnum.LAYER2:
                     if (state.tradeoffQuestionIndex - 1 < 0) {
-                        state.screen = LayersEnum.LAYER1;
+                        state.screen = LayersEnum.LAYER15;
                     } else {
                         state.tradeoffQuestionIndex = state.tradeoffQuestionIndex - 1;
                         state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
@@ -156,11 +195,11 @@ export const guideSlice = createSlice({
                     break;
                 case LayersEnum.END:
                     state.screen = state.layerBeforeEndScreen;
-                    if(state.screen === LayersEnum.LAYER0){
-                        state.progress = 15;
-                    }else if(state.screen === LayersEnum.LAYER2){
+                    if (state.screen === LayersEnum.LAYER15) {
+                        state.progress = 40 + Math.min(Math.max(((state.nonNegotiableTradeQuestionsIndex + 1) / state.nonNegotiableTradeQuestionResults.length) * 10, 0), 10);
+                    } else if (state.screen === LayersEnum.LAYER2) {
                         state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
-                    }else if(state.screen === LayersEnum.LAYER3){
+                    } else if (state.screen === LayersEnum.LAYER3) {
                         state.progress = 80 + Math.min(Math.max(((state.refurbishmentQuestionsIndex + 1) / state.refurbishmentQuestions.length) * 20, 0), 20);
                     }
             }
@@ -191,6 +230,11 @@ export const selectCurrentLayer = createSelector(
 export const selectNonNegotiableFactors = createSelector(
     selectGuideSliceState,
     (state) => (state.nonNegotiableFactors)
+)
+
+export const selectNonNegotiableTradeResult = createSelector(
+    selectGuideSliceState,
+    (state) => state.nonNegotiableTradeResult
 )
 
 export const selectProgress = createSelector(
@@ -270,6 +314,16 @@ export const selectPillarScoring = createSelector(
     (state) => scoreCalculator(state)
 )
 
+export const selectCurrentNonNegotiableTradeQuestionIndex = createSelector(
+    selectGuideSliceState,
+    (state) => state.nonNegotiableTradeQuestionsIndex
+)
+
+export const selectCurrentNonNegotiableTradeQuestionAnswer = createSelector(
+    selectGuideSliceState,
+    (state) => state.nonNegotiableTradeQuestionResults[state.nonNegotiableTradeQuestionsIndex]
+)
+
 export const selectIsNextStepPossible = createSelector(
     selectGuideSliceState,
     (state) => {
@@ -322,6 +376,17 @@ const scoreCalculator = (state: GuideState) => {
     })
 }
 
+export const selectNonNegotiableTradeoffQuestionResults = createSelector(
+    selectGuideSliceState,
+    (state) => {
+        return state.nonNegotiableTradeQuestionResults.filter((item) => item.value !== -1)
+            .map(item => ({
+                ...GuideConfig.nonNegotiableTradeOffQuestion[item.index],
+                result: item.value
+            }))
+    }
+)
+
 const getOnlyNeededRefurbishmentQuestions = (pillars: PillarEnum[]) => {
     return GuideConfig.refurbishmentQuestions.filter(item => item.pillar === undefined || pillars.includes(item.pillar));
 }
@@ -333,7 +398,8 @@ export const {
     setNonNegotiableFactorValue,
     resetState,
     setValueProfile,
-    setTradeOffQuestionValue
+    setTradeOffQuestionValue,
+    setNonNegotiableTradeQuestionValue
 } = guideSlice.actions;
 
 export const guideReducer = guideSlice.reducer;

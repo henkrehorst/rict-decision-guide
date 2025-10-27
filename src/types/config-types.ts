@@ -10,6 +10,7 @@ export enum LayersEnum {
     START = 'START',
     LAYER0 = 'LAYER0',
     LAYER1 = 'LAYER1',
+    LAYER15 = 'LAYER15',
     LAYER2 = 'LAYER2',
     LAYER3 = 'LAYER3',
     NON_NEGOTIABLE_EXISTS = 'NON_NEGOTIABLE_EXISTS',
@@ -48,6 +49,10 @@ export interface ValueProfileQuestion extends Question {
     }
 }
 
+export interface NonNegotiableTradeOffQuestion extends Question {
+    factor: string;
+}
+
 export interface NegotiableTradeOffQuestion extends Question {
     pillar: PillarEnum;
 }
@@ -72,6 +77,7 @@ export interface IGuideConfig {
         [PriorityEnum.LOW]: PriorityRange;
         [PriorityEnum.HIGH]: PriorityRange;
         [PriorityEnum.MEDIUM]: PriorityRange;
-    }
+    },
+    nonNegotiableTradeOffQuestion: Array<NonNegotiableTradeOffQuestion>,
 }
 

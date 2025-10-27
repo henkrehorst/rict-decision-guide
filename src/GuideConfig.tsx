@@ -138,5 +138,31 @@ export const GuideConfig: IGuideConfig = {
             question: 'Is the refurb effort reasonably small and cheap relative to replacement?',
             layer: LayersEnum.LAYER3
         },
+    ],
+    nonNegotiableTradeOffQuestion: [
+        {
+            title: 'Depreciation',
+            question: 'Has the depreciation period of the asset expired yet?',
+            layer: LayersEnum.LAYER1,
+            factor: 'Depreciation'
+        },
+        {
+            title: 'Warranty',
+            question: 'Is the asset still under (supplier) warranty coverage?',
+            layer: LayersEnum.LAYER1,
+            factor: 'Warranty'
+        },
+        {
+            title: 'Security',
+            question: 'Is the hardware still compliant with required security updates?',
+            layer: LayersEnum.LAYER1,
+            factor: 'Security'
+        },
+        {
+            title: 'Functionality',
+            question: 'Is the asset’s main function still performing as intended?',
+            layer: LayersEnum.LAYER1,
+            factor: 'Functional obsolescence'
+        },
     ]
 }

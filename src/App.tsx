@@ -9,6 +9,7 @@ import {ValueProfileLayer} from "./layers/ValueProfileLayer.tsx";
 import {NegotiableTradeOffLayer} from "./layers/NegotiableTradeOffLayer.tsx";
 import {RefurbishmentLayer} from "./layers/RefurbishmentLayer.tsx";
 import {ResultsLayer} from "./layers/ResultsLayer.tsx";
+import {NonNegotiableTradeOffLayer} from "./layers/NonNegotiableTradeOffLayer.tsx";
 
 function App() {
     const currentLayer = useAppSelector(selectCurrentLayer);
@@ -19,6 +20,8 @@ function App() {
             return <NonNegotiableLayer config={GuideConfig.nonNegotiableQuestion}/>;
         case LayersEnum.LAYER1:
             return <ValueProfileLayer config={GuideConfig.valueProfileQuestion}/>;
+        case LayersEnum.LAYER15:
+            return <NonNegotiableTradeOffLayer config={GuideConfig.nonNegotiableTradeOffQuestion}/>
         case LayersEnum.LAYER2:
             return <NegotiableTradeOffLayer questions={GuideConfig.negotiableTradeOffQuestions}/>
         case LayersEnum.LAYER3:
