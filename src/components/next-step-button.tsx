@@ -15,7 +15,7 @@ export const NextStepButton: FC<{ click?: () => void }> = ({click}) => {
                     dispatch(goToNextStep())
                 }
             }}
-            className={'flex justify-between w-full mt-32 hover:bg-bluehover bg-blue text-2xl font-bold text-white font-inter py-4 px-8 rounded-xl'}>
+            className={'flex justify-between w-full mt-4 hover:bg-bluehover bg-blue text-2xl font-bold text-white font-inter py-4 px-8 rounded-xl'}>
             <span>Go to next step</span>
             <ArrowRight className={'fill-current'} size={32}/>
         </button>

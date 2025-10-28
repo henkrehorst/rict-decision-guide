@@ -1,7 +1,13 @@
 import {createSelector, createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import type {RootState} from "./store.ts";
 import {GuideConfig} from "../GuideConfig.tsx";
-import {LayersEnum, PillarEnum, PriorityEnum, type RefurbishmentQuestion} from "../types/config-types.ts";
+import {
+    LayersEnum,
+    type NonNegotiableTradeOffQuestion,
+    PillarEnum,
+    PriorityEnum,
+    type RefurbishmentQuestion
+} from "../types/config-types.ts";
 import {ResultEnum} from "../types/enums/result-enum.ts";
 
 interface GuideState {
@@ -18,6 +24,7 @@ interface GuideState {
     refurbishmentQuestionsIndex: number,
     refurbishmentQuestions: Array<RefurbishmentQuestion>
     refurbishmentQuestionResults: Array<{ index: number, value: -1 | boolean }>
+    nonNegotiableTradeQuestions: Array<NonNegotiableTradeOffQuestion>
     nonNegotiableTradeQuestionResults: Array<{ index: number, value: -1 | boolean, factor: string }>
     nonNegotiableTradeQuestionsIndex: number,
     refurbishmentResult: boolean
@@ -48,11 +55,8 @@ const initialState: GuideState = {
     refurbishmentQuestions: [],
     refurbishmentQuestionResults: [],
     nonNegotiableTradeQuestionsIndex: 0,
-    nonNegotiableTradeQuestionResults: GuideConfig.nonNegotiableTradeOffQuestion.map((item, index) => ({
-        index: index,
-        value: -1,
-        factor: item.factor
-    })),
+    nonNegotiableTradeQuestionResults: [],
+    nonNegotiableTradeQuestions: [],
     refurbishmentResult: false,
     layerBeforeEndScreen: LayersEnum.LAYER0,
     advice: ResultEnum.REPLACE,
@@ -79,8 +83,7 @@ export const guideSlice = createSlice({
             factor: string
         }>) => {
             if (typeof action.payload.value === "boolean") {
-                const factorInformation = state.nonNegotiableFactors.filter(x => x.factor === action.payload.factor)[0];
-                state.nonNegotiableTradeResult = factorInformation.value === "true" && action.payload.value;
+                state.nonNegotiableTradeResult = state.nonNegotiableTradeQuestions[action.payload.index].replaceHardwareWhenAnswerIs === action.payload.value;
             }
             state.nonNegotiableTradeQuestionResults[action.payload.index].value = action.payload.value;
         },
@@ -95,9 +98,23 @@ export const guideSlice = createSlice({
                     state.progress = 40;
                     break;
                 case LayersEnum.LAYER1:
-                    state.screen = LayersEnum.LAYER15;
                     state.nonNegotiableTradeQuestionsIndex = 0;
-                    state.progress = 40 + Math.min(Math.max(((state.nonNegotiableTradeQuestionsIndex + 1) / state.nonNegotiableTradeQuestionResults.length) * 10, 0), 10);
+                    state.nonNegotiableTradeQuestions = GuideConfig.nonNegotiableTradeOffQuestion
+                        .filter(item => state.nonNegotiableFactors.filter(f => f.value === "true").map(f => f.factor).includes(item.factor));
+
+                    if (state.nonNegotiableTradeQuestions.length > 0) {
+                        state.screen = LayersEnum.LAYER15;
+                        state.progress = 40 + Math.min(Math.max(((state.nonNegotiableTradeQuestionsIndex + 1) / state.nonNegotiableTradeQuestions.length) * 10, 0), 10);
+                        state.nonNegotiableTradeQuestionResults = state.nonNegotiableTradeQuestions.map((item, index) => ({
+                            index: index,
+                            value: -1,
+                            factor: item.factor
+                        }))
+                    } else {
+                        state.screen = LayersEnum.LAYER2;
+                        state.tradeoffQuestionIndex = 0;
+                        state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 30, 0), 30);
+                    }
                     break;
                 case LayersEnum.LAYER15:
                     state.screen = LayersEnum.LAYER15;
@@ -178,8 +195,10 @@ export const guideSlice = createSlice({
                     }
                     break;
                 case LayersEnum.LAYER2:
-                    if (state.tradeoffQuestionIndex - 1 < 0) {
+                    if (state.tradeoffQuestionIndex - 1 < 0 && state.nonNegotiableTradeQuestions.length > 0) {
                         state.screen = LayersEnum.LAYER15;
+                    } else if (state.tradeoffQuestionIndex - 1 < 0 && state.nonNegotiableTradeQuestions.length <= 0) {
+                        state.screen = LayersEnum.LAYER1;
                     } else {
                         state.tradeoffQuestionIndex = state.tradeoffQuestionIndex - 1;
                         state.progress = 50 + Math.min(Math.max(((state.tradeoffQuestionIndex + 1) / state.tradeoffQuestionResults.length) * 40, 0), 40);
@@ -378,12 +397,22 @@ const scoreCalculator = (state: GuideState) => {
     })
 }
 
+export const selectNonNegotiableQuestions = createSelector(
+    selectGuideSliceState,
+    (state) => state.nonNegotiableTradeQuestions
+)
+
+export const selectShowNonNegotiableTradeoffQuestionResults = createSelector(
+    selectGuideSliceState,
+    (state) => state.nonNegotiableTradeQuestions.length > 0
+)
+
 export const selectNonNegotiableTradeoffQuestionResults = createSelector(
     selectGuideSliceState,
     (state) => {
         return state.nonNegotiableTradeQuestionResults.filter((item) => item.value !== -1)
             .map(item => ({
-                ...GuideConfig.nonNegotiableTradeOffQuestion[item.index],
+                ...state.nonNegotiableTradeQuestions[item.index],
                 result: item.value
             }))
     }

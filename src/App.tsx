@@ -21,7 +21,7 @@ function App() {
         case LayersEnum.LAYER1:
             return <ValueProfileLayer config={GuideConfig.valueProfileQuestion}/>;
         case LayersEnum.LAYER15:
-            return <NonNegotiableTradeOffLayer config={GuideConfig.nonNegotiableTradeOffQuestion}/>
+            return <NonNegotiableTradeOffLayer/>
         case LayersEnum.LAYER2:
             return <NegotiableTradeOffLayer questions={GuideConfig.negotiableTradeOffQuestions}/>
         case LayersEnum.LAYER3:

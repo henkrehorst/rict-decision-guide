@@ -6,15 +6,14 @@ import {Checkmark, CloseLarge} from "@carbon/icons-react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks.ts";
 import {
     selectCurrentNonNegotiableTradeQuestionAnswer,
-    selectCurrentNonNegotiableTradeQuestionIndex,
+    selectCurrentNonNegotiableTradeQuestionIndex, selectNonNegotiableQuestions,
     setNonNegotiableTradeQuestionValue
 } from "../redux/guide-slice.ts";
 import {NextStepButton} from "../components/next-step-button.tsx";
-import type {NonNegotiableTradeOffQuestion} from "../types/config-types.ts";
 
-
-export const NonNegotiableTradeOffLayer: FC<{config: Array<NonNegotiableTradeOffQuestion>}> = ({config}) => {
+export const NonNegotiableTradeOffLayer: FC = () => {
     const dispatch = useAppDispatch();
+    const questions = useAppSelector(selectNonNegotiableQuestions);
     const currentValue = useAppSelector(selectCurrentNonNegotiableTradeQuestionAnswer);
     const [optionValue, setOptionValue] = useState<string>("-1");
     const currentIndex = useAppSelector(selectCurrentNonNegotiableTradeQuestionIndex);
@@ -38,7 +37,7 @@ export const NonNegotiableTradeOffLayer: FC<{config: Array<NonNegotiableTradeOff
         dispatch(setNonNegotiableTradeQuestionValue({
             index: currentValue.index,
             value: value,
-            factor: config[currentIndex].factor
+            factor: questions[currentIndex].factor
         }));
     }, [optionValue]);
 
@@ -48,10 +47,10 @@ export const NonNegotiableTradeOffLayer: FC<{config: Array<NonNegotiableTradeOff
             <div className={'mx-auto container max-w-screen-lg px-4'}>
                 <div className={'m-4'}>
                     <h2 className={'font-inter font-bold text-4xl text-green'}>
-                        {config[currentIndex].title}
+                        {questions[currentIndex].title}
                     </h2>
                     <h1 className={'mt-4 font-inter font-normal text-4xl text-black'}>
-                        {config[currentIndex].question}
+                        {questions[currentIndex].question}
                     </h1>
                 </div>
                 <div className={'mt-8 p-4'}>

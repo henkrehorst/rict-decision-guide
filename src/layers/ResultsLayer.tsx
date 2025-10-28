@@ -4,7 +4,7 @@ import {
     selectAdvice,
     selectLayerBeforeEndScreen,
     selectNonNegotiableFactors, selectNonNegotiableTradeoffQuestionResults, selectNonNegotiableTradeResult,
-    selectPillarScoring, selectRefurbishmentQuestionsAndResults,
+    selectPillarScoring, selectRefurbishmentQuestionsAndResults, selectShowNonNegotiableTradeoffQuestionResults,
     selectTradeOffQuestionResults,
     selectValueProfile
 } from "../redux/guide-slice.ts";
@@ -31,6 +31,7 @@ export const ResultsLayer = () => {
     const nonNegotiableFactors = useAppSelector(selectNonNegotiableFactors);
     const layerBefore = useAppSelector(selectLayerBeforeEndScreen);
     const valueProfile = useAppSelector(selectValueProfile);
+    const showNonNegotiableResults = useAppSelector(selectShowNonNegotiableTradeoffQuestionResults);
 
 
     return <>
@@ -181,19 +182,21 @@ export const ResultsLayer = () => {
                     </div>
                 </div>
             </div>
-            <div className={'mx-4 bg-gray-100 font-inter px-6 py-6 rounded-3xl mt-4'}>
-                <h1 className={'font font-bold text-black text-2xl mb-4 flex gap-4 items-center'}>
-                    <NetworkAdminControl size={32} className={'fill-current'}/>
-                    <span>Non-negotiable Questions</span>
-                </h1>
-                <p className={'font-normal text-sm italic text-black mb-4'}>
-                    The non-negotiable questions are used to determine whether, based on the defined factors, it is
-                    possible to retain and refurbish the hardware.
-                    If a factor is defined as non-negotiable, the question must always be answered with ‘no’ in order to
-                    qualify for retaining or refurbishing the hardware.
-                </p>
-                <NonNegotiableQuestionsTable/>
-            </div>
+            {showNonNegotiableResults &&
+                <div className={'mx-4 bg-gray-100 font-inter px-6 py-6 rounded-3xl mt-4'}>
+                    <h1 className={'font font-bold text-black text-2xl mb-4 flex gap-4 items-center'}>
+                        <NetworkAdminControl size={32} className={'fill-current'}/>
+                        <span>Non-negotiable Questions</span>
+                    </h1>
+                    <p className={'font-normal text-sm italic text-black mb-4'}>
+                        The non-negotiable questions are used to determine whether, based on the defined factors, it is
+                        possible to retain and refurbish the hardware. If a factor is defined as non-negotiable, the
+                        question must always be answered with ‘no’ in order to qualify for retaining or refurbishing the
+                        hardware.
+                    </p>
+                    <NonNegotiableQuestionsTable/>
+                </div>
+            }
             {layerBefore === LayersEnum.LAYER3 || layerBefore === LayersEnum.LAYER2 ?
                 <>
                     <div className={'mx-4 bg-gray-100 font-inter px-6 py-6 rounded-3xl mt-4'}>
@@ -302,71 +305,71 @@ export const TradeOffResultsPillarTable: FC<{ pillar: PillarEnum }> = ({pillar})
             <span>{GuideConfig.valueProfileQuestion.values[pillar].name}</span>
         </h3>
         <div className={'overflow-x-auto'}>
-        <table className="w-full table-auto text-left bg-white border-collapse border border-slate-500 mb-4">
-            <thead>
-            <tr className={'border-collapse border border-slate-500'}>
-                <th className={'px-4'}>Question</th>
-                <th className={'px-4'}>Answer</th>
-                <th className={'px-4'}>Score</th>
-            </tr>
-            </thead>
-            <tbody>
-            {tradeOffQuestionResults.filter(item => item.pillar == pillar).map((item, index) => (
-                <tr key={index}>
-                    <td className={'px-4'}>
-                        {GuideConfig.negotiableTradeOffQuestions[item.index].title}: {GuideConfig.negotiableTradeOffQuestions[item.index].question}
-                    </td>
-                    <td className={'px-4'}>{item.value === 1 ?
-                        <span
-                            className={'text-md text-white bg-red font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+            <table className="w-full table-auto text-left bg-white border-collapse border border-slate-500 mb-4">
+                <thead>
+                <tr className={'border-collapse border border-slate-500'}>
+                    <th className={'px-4'}>Question</th>
+                    <th className={'px-4'}>Answer</th>
+                    <th className={'px-4'}>Score</th>
+                </tr>
+                </thead>
+                <tbody>
+                {tradeOffQuestionResults.filter(item => item.pillar == pillar).map((item, index) => (
+                    <tr key={index}>
+                        <td className={'px-4'}>
+                            {GuideConfig.negotiableTradeOffQuestions[item.index].title}: {GuideConfig.negotiableTradeOffQuestions[item.index].question}
+                        </td>
+                        <td className={'px-4'}>{item.value === 1 ?
+                            <span
+                                className={'text-md text-white bg-red font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
                                             Insufficient
                                             <ThumbsDown size={20} className={'fill-current'}/>
                                         </span>
-                        : item.value === 2 ?
-                            <span
-                                className={'text-md text-white bg-orange-500 font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+                            : item.value === 2 ?
+                                <span
+                                    className={'text-md text-white bg-orange-500 font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
                                             Adequate
                                             <ThumbsUp size={20} className={'fill-current -rotate-90'}/>
                                         </span>
-                            : item.value === 3 ?
-                                <span
-                                    className={'text-md text-white bg-green font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                : item.value === 3 ?
+                                    <span
+                                        className={'text-md text-white bg-green font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
                                             Excellent
                                             <ThumbsUp size={20} className={'fill-current'}/>
                                         </span> :
-                                <span
-                                    className={'text-md text-white bg-black font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
+                                    <span
+                                        className={'text-md text-white bg-black font-inter font-bold text-left w-32 p-2 rounded-xl inline-flex justify-between items-center'}>
                                             Unknown
                                             <Unknown size={20} className={'fill-current'}/>
                                         </span>
-                    }</td>
-                    <td className={'px-4'}>{item.value.toFixed(0)}</td>
-                </tr>
-            ))}
-            </tbody>
-            <tfoot>
-            <tr className={'border-collapse border border-slate-500'}>
-                <th className={'px-4 font-bold text-right'}>(priority: {pillarScoring.filter(item => item.pillar === pillar)![0].priority.toString()},
-                    threshold: {'>='}{GuideConfig.decisionThresholds[pillarScoring.filter(item => item.pillar === pillar)![0].priority]})
-                    Result:
-                </th>
-                <th className={'px-4 py-2 font-bold'}>{pillarScoring.filter(item => item.pillar == pillar)![0].keep ?
-                    <span
-                        className={'text-md text-white bg-green font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between  items-center'}>
+                        }</td>
+                        <td className={'px-4'}>{item.value.toFixed(0)}</td>
+                    </tr>
+                ))}
+                </tbody>
+                <tfoot>
+                <tr className={'border-collapse border border-slate-500'}>
+                    <th className={'px-4 font-bold text-right'}>(priority: {pillarScoring.filter(item => item.pillar === pillar)![0].priority.toString()},
+                        threshold: {'>='}{GuideConfig.decisionThresholds[pillarScoring.filter(item => item.pillar === pillar)![0].priority]})
+                        Result:
+                    </th>
+                    <th className={'px-4 py-2 font-bold'}>{pillarScoring.filter(item => item.pillar == pillar)![0].keep ?
+                        <span
+                            className={'text-md text-white bg-green font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between  items-center'}>
                                         Keep
                                         <Checkmark size={20} className={'fill-current'}/>
                                     </span>
-                    :
-                    <span
-                        className={'text-md text-white bg-red font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between items-center'}>
+                        :
+                        <span
+                            className={'text-md text-white bg-red font-inter font-bold text-left w-24 p-2 rounded-xl inline-flex justify-between items-center'}>
                                         Replace
                                         <CloseLarge size={20} className={'fill-current'}/>
                                     </span>
-                }</th>
-                <th className={'px-4 font-bold'}>{pillarScoring.filter(item => item.pillar == pillar)![0].score.toFixed(1)}</th>
-            </tr>
-            </tfoot>
-        </table>
+                    }</th>
+                    <th className={'px-4 font-bold'}>{pillarScoring.filter(item => item.pillar == pillar)![0].score.toFixed(1)}</th>
+                </tr>
+                </tfoot>
+            </table>
         </div>
     </>)
 }

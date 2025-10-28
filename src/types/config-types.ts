@@ -51,6 +51,7 @@ export interface ValueProfileQuestion extends Question {
 
 export interface NonNegotiableTradeOffQuestion extends Question {
     factor: string;
+    replaceHardwareWhenAnswerIs: boolean;
 }
 
 export interface NegotiableTradeOffQuestion extends Question {

@@ -144,25 +144,29 @@ export const GuideConfig: IGuideConfig = {
             title: 'Depreciation',
             question: 'Has the depreciation period of the asset expired yet?',
             layer: LayersEnum.LAYER1,
-            factor: 'Depreciation'
+            factor: 'Depreciation',
+            replaceHardwareWhenAnswerIs: true
         },
         {
             title: 'Warranty',
             question: 'Is the asset still under (supplier) warranty coverage?',
             layer: LayersEnum.LAYER1,
-            factor: 'Warranty'
+            factor: 'Warranty',
+            replaceHardwareWhenAnswerIs: false
         },
         {
             title: 'Security',
             question: 'Is the hardware still compliant with required security updates?',
             layer: LayersEnum.LAYER1,
-            factor: 'Security'
+            factor: 'Security',
+            replaceHardwareWhenAnswerIs: false
         },
         {
             title: 'Functionality',
             question: 'Is the asset’s main function still performing as intended?',
             layer: LayersEnum.LAYER1,
-            factor: 'Functional obsolescence'
+            factor: 'Functional obsolescence',
+            replaceHardwareWhenAnswerIs: false
         },
     ]
 }
