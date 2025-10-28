@@ -100,9 +100,9 @@ export const GuideConfig: IGuideConfig = {
         },
     ],
     decisionThresholds: {
-        LOW: 1.6,
+        LOW: 1.75,
         MEDIUM: 2,
-        HIGH: 2.6
+        HIGH: 2.5
     },
     priorityRange: {
         LOW: {max: 25, min: 0},
