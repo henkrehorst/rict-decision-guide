@@ -4,6 +4,7 @@ export interface Question {
     layer: LayersEnum;
     title: string;
     question: string;
+    helpInformation?: string;
 }
 
 export enum LayersEnum {

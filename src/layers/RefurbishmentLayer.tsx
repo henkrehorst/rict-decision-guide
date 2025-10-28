@@ -2,7 +2,7 @@ import {MenuBar} from "../components/menu-bar.tsx";
 import {Radio, RadioGroup} from "@headlessui/react";
 import {type FC, useEffect, useState} from "react";
 import {cn} from "clsx-for-tailwind";
-import {Checkmark, CloseLarge} from "@carbon/icons-react";
+import {Checkmark, Close, CloseLarge, InformationFilled} from "@carbon/icons-react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks.ts";
 import {
     selectCurrentRefurbishmentQuestions,
@@ -19,8 +19,11 @@ export const RefurbishmentLayer: FC = () => {
     const currentValue = useAppSelector(selectCurrentRefurbishmentQuestionValue);
     const [optionValue, setOptionValue] = useState<string>("-1");
     const currentIndex= useAppSelector(selectCurrentRefurbishmentQuestionsIndex);
+    const [showHelp, setShowHelp] = useState<boolean>(false);
+
 
     useEffect(() => {
+        setShowHelp(false);
         if (currentValue !== undefined) {
             setOptionValue(String(currentValue));
         } else {
@@ -52,8 +55,27 @@ export const RefurbishmentLayer: FC = () => {
                     </h2>
                     <h1 className={'mt-4 font-inter font-normal text-4xl text-black'}>
                         {currentQuestion.question.question}
+                        {currentQuestion.question.helpInformation &&
+                            <InformationFilled onClick={() => {
+                                setShowHelp(!showHelp)
+                            }} className={'hover:text-green cursor-pointer size-[50px]'}/>
+                        }
                     </h1>
                 </div>
+                {currentQuestion.question.helpInformation && showHelp ?
+                    <div className={'w-full bg-lightgreen rounded-md p-4 mb-4'}>
+                        <h3 className={'font-inter font-bold text-black text-lg relative'}>
+                            What is this about?
+                            <Close className={'absolute right-0 top-0 cursor-pointer'} size={24}
+                                   onClick={() => {
+                                       setShowHelp(false)
+                                   }}/>
+                        </h3>
+                        <p className={'font-inter font-normal text-black text-lg italic'}>
+                            {currentQuestion.question.helpInformation}
+                        </p>
+                    </div> : null
+                }
                 <div className={'mt-8 p-4'}>
                     <RadioGroup className={"flex flex-col md:flex-row flex-wrap gap-4"} value={optionValue}
                                 onChange={setOptionValue}>

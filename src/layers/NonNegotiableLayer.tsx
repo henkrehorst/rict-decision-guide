@@ -1,9 +1,9 @@
 import {MenuBar} from "../components/menu-bar.tsx";
 import {Radio, RadioGroup} from "@headlessui/react";
-import {type FC} from "react";
+import {type FC, useState} from "react";
 import type {NoNNegotiableQuestion} from "../types/config-types.ts";
 import {cn} from "clsx-for-tailwind";
-import {Checkmark, CloseLarge} from "@carbon/icons-react";
+import {Checkmark, Close, CloseLarge, InformationFilled} from "@carbon/icons-react";
 import {useAppDispatch, useAppSelector} from "../redux/hooks.ts";
 import {
     selectIsNonNegotiableFactorsSelectionComplete,
@@ -17,6 +17,7 @@ export const NonNegotiableLayer: FC<{ config: NoNNegotiableQuestion }> = ({confi
     const dispatch = useAppDispatch();
     const selectionComplete = useAppSelector(selectIsNonNegotiableFactorsSelectionComplete)
     const factors = useAppSelector(selectNonNegotiableFactors);
+    const [showHelp, setShowHelp] = useState<boolean>(false)
 
     return (
         <>
@@ -26,10 +27,29 @@ export const NonNegotiableLayer: FC<{ config: NoNNegotiableQuestion }> = ({confi
                     <h2 className={'font-inter font-bold text-4xl text-green'}>
                         {config.title}
                     </h2>
-                    <h1 className={'mt-4 font-inter font-normal text-4xl text-black'}>
-                        {config.question}
+                    <h1 className={'mt-4 font-inter font-normal text-4xl text-black flex items-center'}>
+                        <span>{config.question}</span>
+                        {config.helpInformation &&
+                            <InformationFilled onClick={() => {
+                                setShowHelp(!showHelp)
+                            }} className={'hover:text-green cursor-pointer size-[50px]'}/>
+                        }
                     </h1>
                 </div>
+                {config.helpInformation && showHelp ?
+                    <div className={'w-full bg-lightgreen rounded-md p-4 mb-4'}>
+                        <h3 className={'font-inter font-bold text-black text-lg relative'}>
+                            What is this about?
+                            <Close className={'absolute right-0 top-0 cursor-pointer'} size={24}
+                                   onClick={() => {
+                                       setShowHelp(false)
+                                   }}/>
+                        </h3>
+                        <p className={'font-inter font-normal text-black text-lg italic'}>
+                            {config.helpInformation}
+                        </p>
+                    </div> : null
+                }
                 <div className={'w-full bg-green rounded-md flex gap-4 items-center p-4'}>
                     {config.tipIcon}
                     <p className={'font-inter font-normal italic text-lightgreen text-lg'}>

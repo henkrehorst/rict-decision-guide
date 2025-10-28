@@ -8,6 +8,7 @@ export default {
       colors: {
         lightgreen: '#E2EEE0',
         green: '#3D8F2C',
+        helpGreen: '#77cf63',
         blue: '#233fff',
         bluehover: '#0018b3',
         red: '#e81b42',

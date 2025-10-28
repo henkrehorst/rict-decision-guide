@@ -10,15 +10,18 @@ import {
 } from "../redux/guide-slice.ts";
 import {Radio, RadioGroup} from "@headlessui/react";
 import {cn} from "clsx-for-tailwind";
-import {ThumbsDown, ThumbsUp, Unknown} from "@carbon/icons-react";
+import {Close, InformationFilled, ThumbsDown, ThumbsUp, Unknown} from "@carbon/icons-react";
 
 export const NegotiableTradeOffLayer: FC<{ questions: Array<NegotiableTradeOffQuestion> }> = ({questions}) => {
     const questionIndex = useAppSelector(selectTradeoffQuestionIndex);
     const currentValue = useAppSelector(selectCurrentTradeOffQuestionValue);
     const dispatch = useAppDispatch();
     const [optionValue, setOptionValue] = useState<null | string>("-1");
+    const [showHelp, setShowHelp] = useState<boolean>(false);
+
 
     useEffect(() => {
+        setShowHelp(false);
         if (currentValue !== undefined) {
             setOptionValue(String(currentValue));
         } else {
@@ -41,10 +44,29 @@ export const NegotiableTradeOffLayer: FC<{ questions: Array<NegotiableTradeOffQu
                     <h2 className={'font-inter font-bold text-4xl text-green'}>
                         {questions[questionIndex].title}
                     </h2>
-                    <h1 className={'mt-4 font-inter font-normal text-4xl text-black'}>
+                    <h1 className={'mt-4 font-inter font-normal text-4xl text-black flex items-center'}>
                         {questions[questionIndex].question}
+                        {questions[questionIndex].helpInformation &&
+                            <InformationFilled onClick={() => {
+                                setShowHelp(!showHelp)
+                            }} className={'hover:text-green cursor-pointer size-[50px]'}/>
+                        }
                     </h1>
                 </div>
+                {questions[questionIndex].helpInformation && showHelp ?
+                    <div className={'w-full bg-lightgreen rounded-md p-4 mb-4'}>
+                        <h3 className={'font-inter font-bold text-black text-lg relative'}>
+                            What is this about?
+                            <Close className={'absolute right-0 top-0 cursor-pointer'} size={24}
+                                   onClick={() => {
+                                       setShowHelp(false)
+                                   }}/>
+                        </h3>
+                        <p className={'font-inter font-normal text-black text-lg italic'}>
+                            {questions[questionIndex].helpInformation}
+                        </p>
+                    </div> : null
+                }
                 <div className={'mt-8 p-4'}>
                     <RadioGroup className={"flex flex-col md:flex-row flex-wrap gap-4"} value={optionValue}
                                 onChange={setOptionValue}>

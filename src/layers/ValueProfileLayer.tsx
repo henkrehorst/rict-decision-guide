@@ -6,6 +6,7 @@ import {Tooltip} from "react-tooltip";
 import {NextStepButton} from "../components/next-step-button.tsx";
 import {useAppDispatch, useAppSelector} from "../redux/hooks.ts";
 import {selectValueProfile, setValueProfile} from "../redux/guide-slice.ts";
+import {Close, InformationFilled} from "@carbon/icons-react";
 
 export const ValueProfileLayer: FC<{ config: ValueProfileQuestion }> = ({config}) => {
     const [cost, setCost] = useState(0);
@@ -13,6 +14,8 @@ export const ValueProfileLayer: FC<{ config: ValueProfileQuestion }> = ({config}
     const [sustainability, setSustainability] = useState(0);
     const valueProfile = useAppSelector(selectValueProfile);
     const dispatch = useAppDispatch();
+    const [showHelp, setShowHelp] = useState<boolean>(false);
+
 
     useEffect(() => {
         setCost(valueProfile[PillarEnum.COST]);
@@ -36,10 +39,29 @@ export const ValueProfileLayer: FC<{ config: ValueProfileQuestion }> = ({config}
                     <h2 className={'font-inter font-bold text-4xl text-green'}>
                         {config.title}
                     </h2>
-                    <h1 className={'mt-4 font-inter font-normal text-4xl text-black'}>
+                    <h1 className={'mt-4 font-inter font-normal text-4xl text-black flex items-center'}>
                         {config.question}
+                        {config.helpInformation &&
+                            <InformationFilled onClick={() => {
+                                setShowHelp(!showHelp)
+                            }} className={'hover:text-green cursor-pointer size-[50px]'}/>
+                        }
                     </h1>
                 </div>
+                {config.helpInformation && showHelp ?
+                    <div className={'w-full bg-lightgreen rounded-md p-4 mb-4'}>
+                        <h3 className={'font-inter font-bold text-black text-lg relative'}>
+                            What is this about?
+                            <Close className={'absolute right-0 top-0 cursor-pointer'} size={24}
+                                   onClick={() => {
+                                       setShowHelp(false)
+                                   }}/>
+                        </h3>
+                        <p className={'font-inter font-normal text-black text-lg italic'}>
+                            {config.helpInformation}
+                        </p>
+                    </div> : null
+                }
                 <div className={'grid grid-cols-1 md:grid-cols-2 gap-4 items-center mt-8'}>
                     <div className={'p-4 flex flex-col gap-6'}>
                         <div>
