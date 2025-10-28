@@ -1,5 +1,6 @@
 import {useAppDispatch} from "../redux/hooks.ts";
 import {goToNextStep} from "../redux/guide-slice.ts";
+import {LogoGithub} from "@carbon/icons-react";
 
 export const StartScreen = () => {
     const dispatch = useAppDispatch();
@@ -26,6 +27,10 @@ export const StartScreen = () => {
                     </button>
                 </div>
             </div>
+            <a href={'https://github.com/henkrehorst/rict-decision-guide'} target={'_blank'}
+               className={'cursor-pointer absolute bottom-0 right-0 bg-white p-2 rounded-tl-3xl'}>
+                <LogoGithub size={40}/>
+            </a>
         </div>
     )
 }
